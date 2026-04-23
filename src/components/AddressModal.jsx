@@ -6,7 +6,8 @@ export default function AddressModal({ isOpen, onClose, onSave, initialData, t, 
 
   const [formData, setFormData] = useState({
     house: "", building: "", area: "", landmark: "",
-    pincode: "", receiverName: "", receiverPhone: "", type: "Home"
+    pincode: "", city: "", state: "", country: isKenya ? "Kenya" : "India",
+    receiverName: "", receiverPhone: "", type: "Home"
   });
   const [locStatus, setLocStatus] = useState(""); // "", "detecting", "found", "denied"
   const [showMapPicker, setShowMapPicker] = useState(false);
@@ -22,10 +23,10 @@ export default function AddressModal({ isOpen, onClose, onSave, initialData, t, 
 
   useEffect(() => {
     if (initialData) {
-      setFormData(initialData);
+      setFormData({ ...initialData, country: initialData.country || (isKenya ? "Kenya" : "India") });
       setLocStatus("");
     } else {
-      setFormData({ house: "", building: "", area: "", landmark: "", pincode: "", receiverName: "", receiverPhone: "", type: "Home" });
+      setFormData({ house: "", building: "", area: "", landmark: "", pincode: "", city: "", state: "", country: isKenya ? "Kenya" : "India", receiverName: "", receiverPhone: "", type: "Home" });
       setLocStatus("");
     }
   }, [initialData, isOpen]);
@@ -61,6 +62,9 @@ export default function AddressModal({ isOpen, onClose, onSave, initialData, t, 
         pincode: addr.postcode || "",
         landmark: addr.road || addr.pedestrian || "",
         building: addr.building || addr.amenity || "",
+        city: addr.city || addr.town || addr.village || "",
+        state: addr.state || "",
+        country: addr.country || (isKenya ? "Kenya" : "India"),
       }));
       setLocStatus("found");
       return data;
@@ -219,14 +223,37 @@ export default function AddressModal({ isOpen, onClose, onSave, initialData, t, 
 
             <div style={{ gridColumn: "1 / -1" }}>
               <label style={{ fontSize: "0.7rem", fontWeight: 800, color: "#64748b", marginBottom: "6px", display: "block" }}>AREA / STREET / SECTOR</label>
-              <input type="text" placeholder="e.g. KPHB Phase 1" value={formData.area} onChange={(e) => setFormData({ ...formData, area: e.target.value })}
+              <input type="text" placeholder={isKenya ? "e.g. Westlands" : "e.g. KPHB Phase 1"} value={formData.area} onChange={(e) => setFormData({ ...formData, area: e.target.value })}
                 style={{ width: "100%", padding: "12px", borderRadius: "10px", border: "1.5px solid #e2e8f0", outline: "none" }} />
             </div>
 
             <div style={{ gridColumn: "1 / -1" }}>
               <label style={{ fontSize: "0.7rem", fontWeight: 800, color: "#64748b", marginBottom: "6px", display: "block" }}>LANDMARK (OPTIONAL)</label>
-              <input type="text" placeholder="e.g. Near HDFC Bank" value={formData.landmark} onChange={(e) => setFormData({ ...formData, landmark: e.target.value })}
+              <input type="text" placeholder={isKenya ? "e.g. Near KCB Bank" : "e.g. Near HDFC Bank"} value={formData.landmark} onChange={(e) => setFormData({ ...formData, landmark: e.target.value })}
                 style={{ width: "100%", padding: "12px", borderRadius: "10px", border: "1.5px solid #e2e8f0", outline: "none" }} />
+            </div>
+
+            <div style={{ gridColumn: "1 / -1", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }}>
+              <div>
+                <label style={{ fontSize: "0.7rem", fontWeight: 800, color: "#64748b", marginBottom: "6px", display: "block" }}>PINCODE / ZIPCODE</label>
+                <input type="text" placeholder={isKenya ? "e.g. 00100" : "e.g. 500072"} value={formData.pincode} onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
+                  style={{ width: "100%", padding: "12px", borderRadius: "10px", border: "1.5px solid #e2e8f0", outline: "none" }} />
+              </div>
+              <div>
+                <label style={{ fontSize: "0.7rem", fontWeight: 800, color: "#64748b", marginBottom: "6px", display: "block" }}>CITY</label>
+                <input type="text" placeholder={isKenya ? "e.g. Nairobi" : "e.g. Hyderabad"} value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  style={{ width: "100%", padding: "12px", borderRadius: "10px", border: "1.5px solid #e2e8f0", outline: "none" }} />
+              </div>
+              <div>
+                <label style={{ fontSize: "0.7rem", fontWeight: 800, color: "#64748b", marginBottom: "6px", display: "block" }}>STATE / REGION</label>
+                <input type="text" placeholder={isKenya ? "e.g. Nairobi County" : "e.g. Telangana"} value={formData.state} onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                  style={{ width: "100%", padding: "12px", borderRadius: "10px", border: "1.5px solid #e2e8f0", outline: "none" }} />
+              </div>
+              <div>
+                <label style={{ fontSize: "0.7rem", fontWeight: 800, color: "#64748b", marginBottom: "6px", display: "block" }}>COUNTRY</label>
+                <input type="text" value={formData.country} onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                  style={{ width: "100%", padding: "12px", borderRadius: "10px", border: "1.5px solid #e2e8f0", outline: "none", background: "#f8fafc" }} />
+              </div>
             </div>
 
             <div style={{ gridColumn: "1 / -1", background: "#f8fafc", padding: "15px", borderRadius: "12px", marginTop: "10px", border: "1px solid #e2e8f0" }}>
@@ -239,7 +266,7 @@ export default function AddressModal({ isOpen, onClose, onSave, initialData, t, 
                 <label style={{ fontSize: "0.7rem", fontWeight: 800, color: "#64748b", marginBottom: "6px", display: "block" }}>RECEIVER'S PHONE NUMBER</label>
                 <div style={{ display: "flex", gap: "10px" }}>
                   <div style={{ padding: "12px", background: "#fff", border: "1.5px solid #e2e8f0", borderRadius: "10px", color: "#64748b", fontWeight: 700 }}>{phonePrefix} </div>
-                  <input type="text" placeholder="8519913550" value={formData.receiverPhone} onChange={(e) => setFormData({ ...formData, receiverPhone: e.target.value })}
+                  <input type="text" placeholder={isKenya ? "712345678" : "9800000000"} value={formData.receiverPhone} onChange={(e) => setFormData({ ...formData, receiverPhone: e.target.value })}
                     style={{ flex: 1, padding: "12px", borderRadius: "10px", border: "1.5px solid #e2e8f0", background: "white", outline: "none" }} />
                 </div>
               </div>
